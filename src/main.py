@@ -1,19 +1,22 @@
 from fastapi import (FastAPI, Request, Response)
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+import bcrypt
 
 from uuid import uuid4
 import random
 import os
 
-try:
+from schemas import User
+from routes.auth import router as auth_router
+
+if os.path.isfile('.env'):
     load_dotenv()
-except:
-    pass
+
+__version__ = '0.0.1'
 
 app = FastAPI()
-
-VERSION = "0.0.1-development"
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,4 +30,4 @@ app.add_middleware(
 
 @app.get("/")
 def index():
-    return {"status": "success", "version": VERSION}
+    return {"status": "success", "version": __version__}
