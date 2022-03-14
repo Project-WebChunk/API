@@ -7,11 +7,11 @@ from uuid import uuid4
 import random
 import os
 
-from schemas import User
-from routes.auth import router as auth_router
-
 if os.path.isfile('.env'):
     load_dotenv()
+
+from .schemas import User
+from .routes.auth import router as auth_router
 
 __version__ = '0.0.1'
 
