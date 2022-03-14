@@ -18,4 +18,7 @@ class User(BaseModel):
         if gender not in genders:
             raise ValueError(f"Must Be A Valid Gender")
         return gender
-    
+
+
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
