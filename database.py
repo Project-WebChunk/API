@@ -78,3 +78,12 @@ class Database:
 
     def verify_user(self, user_id):
         self.users.update_one({'_id': user_id}, {'$set': {'is_verified': True}})
+
+    def authenticate_user(self, email, password):
+        user = self.get_user_by_email(email)
+        if not user:
+            return "Email not found"
+        if not bcrypt.checkpw(password.encode('utf-8'), user['password']):
+            return "Password is incorrect"
+        del user['password']
+        return user

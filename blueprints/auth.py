@@ -44,4 +44,21 @@ def verify():
         database.verify_user(user['_id'])
         return '<div align="center"><font size="6">Yay! You have been verified!</font><br></div>'
     except Exception as e:
-        return '<div align="center"><font size="6">Oops, Something went wrong!</font><br></div><br>'+ str(e)
+        return f'<div align="center"><font size="6">Oops, Something went wrong!</font><br>{str(e)}</div><br>'
+
+@router.route('/login', methods=['POST'])
+def login():
+    data = request.form
+    if "email" not in data:
+        return jsonify({'status': 'error', 'message': 'Missing email'}), 400
+    if "password" not in data:
+        return jsonify({'status': 'error', 'message': 'Missing password'}), 400
+
+    for value in list(data.values()):
+        if value.replace(' ', '') == '' or value == None:
+            return jsonify({'status': 'error', 'message': 'Empty value'}), 400
+
+    user = database.authenticate_user(data['email'], data['password'])
+    if type(user) == str:
+        return jsonify({'status': 'error', 'message': user}), 400
+    return jsonify({'status': 'success', 'data': user}), 200
