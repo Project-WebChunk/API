@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 
 from database import Database
+from blueprints.auth import router as auth_router
 
 if os.path.isfile('.env'):
     load_dotenv('.env')
@@ -12,6 +13,8 @@ app = Flask(__name__)
 app.config.from_mapping(dict(os.environ))
 
 database = Database()
+
+app.register_blueprint(auth_router)
 
 @app.route('/')
 def index():
