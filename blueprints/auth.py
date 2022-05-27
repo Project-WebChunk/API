@@ -1,4 +1,7 @@
 from flask import Blueprint, jsonify, request
+import jwt
+
+import os
 
 router = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -27,3 +30,18 @@ def register():
     user = database.register_user(data['username'], data['email'], data['password'])
 
     return jsonify({'status': 'success', 'user': user}), 201
+
+@router.route('/verify', methods=['GET'])
+def verify():
+    try:
+        token = request.args.get('token')
+        user_id = jwt.decode(token, os.getenv('TOKEN'), algorithms=['HS256'])['_id']
+        user = database.get_user_by_id(user_id)
+        if user == None:
+            return '<div align="center"><font size="6">Oops, User Not Found!</font><br></div>'
+        if user['is_verified'] == True:
+            return jsonify({'status': 'error', 'message': 'User already verified'}), 400
+        database.verify_user(user['_id'])
+        return '<div align="center"><font size="6">Yay! You have been verified!</font><br></div>'
+    except Exception as e:
+        return '<div align="center"><font size="6">Oops, Something went wrong!</font><br></div><br>'+ str(e)
