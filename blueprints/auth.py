@@ -61,4 +61,4 @@ def login():
     user = database.authenticate_user(data['email'], data['password'])
     if type(user) == str:
         return jsonify({'status': 'error', 'message': user}), 400
-    return jsonify({'status': 'success', 'data': user}), 200
+    return jsonify({'status': 'success', 'data': user['token']}), 200

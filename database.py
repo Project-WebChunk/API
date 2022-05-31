@@ -79,11 +79,43 @@ class Database:
     def verify_user(self, user_id):
         self.users.update_one({'_id': user_id}, {'$set': {'is_verified': True}})
 
+    def set_user_token(self, user_id):
+        user = self.get_user_by_id(user_id)
+        if user:
+            token = {
+                "user_id": user_id,
+                "email": user['email'],
+                "created_at": datetime.datetime.timestamp(datetime.datetime.utcnow()),
+                "expires_at": datetime.datetime.timestamp(datetime.datetime.utcnow() + datetime.timedelta(days=30))
+            }
+            token = jwt.encode(token, os.getenv('TOKEN'), algorithm='HS256')
+            self.users.update_one({'_id': user['_id']}, {'$set': {'token': token}})
+            return token
+
+    def check_token(self, token):
+        try:
+            decoded = jwt.decode(token, os.getenv('TOKEN'), algorithms=['HS256'])
+            current_time = datetime.datetime.timestamp(datetime.datetime.utcnow())
+            if decoded['expires_at'] < current_time:
+                return False
+            return True
+        except:
+            return "Invalid Token"
+
+
     def authenticate_user(self, email, password):
         user = self.get_user_by_email(email)
         if not user:
             return "Email not found"
         if not bcrypt.checkpw(password.encode('utf-8'), user['password']):
             return "Password is incorrect"
-        del user['password']
-        return user
+        # del user['password']
+        # return user
+        if 'token' not in user:
+            token = self.set_user_token(user['_id'])
+        else:
+            if self.check_token(user['token']):
+                token = user['token']
+            else:
+                token = self.set_user_token(user['_id'])
+        return {"token": token}
